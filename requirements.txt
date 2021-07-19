@@ -1,2 +1,4 @@
 selenium~=3.141.0
 setuptools~=57.4.0
+requests~=2.26.0
+IWantG~=1.0
