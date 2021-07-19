@@ -132,3 +132,4 @@ dmypy.json
 # my gitignore
 .idea
 prv_report.ini
+ideas/
