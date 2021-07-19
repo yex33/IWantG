@@ -9,11 +9,11 @@ from selenium.webdriver.firefox.webdriver import WebDriver
 from selenium.webdriver.support import expected_conditions
 from selenium.webdriver.support.wait import WebDriverWait
 
-from IWantG.constants import MEDIUM_SLEEP
+from IWantG.constants import *
 
 
 class Browser:
-    PROJECT_ROOT: str = os.getcwd()
+    PROJECT_ROOT: str = os.path.abspath(os.path.join(__file__, os.pardir, os.pardir))
     GECKODRIVER_PATH: str = os.path.join(PROJECT_ROOT, "bin", "geckodriver")
 
     def __init__(self, headless: bool = True):
@@ -34,13 +34,13 @@ class Browser:
     def get(self, url: str) -> None:
         self.driver.get(url)
 
-    def get_page_source(self) -> WebDriver:
-        return self.driver.page_source
+    def get_cookies(self):
+        return self.driver.get_cookies()
 
     def implicitly_wait(self, t: int) -> None:
         self.driver.implicitly_wait(t)
 
-    def find(self, css_selector: str, element=None, wait_time: int = 0):
+    def find_by_css(self, css_selector: str, element=None, wait_time: int = 0):
         within = element or self.driver
         try:
             if wait_time > 0:
@@ -53,6 +53,16 @@ class Browser:
             return within.find_element(By.CSS_SELECTOR, css_selector)
         except NoSuchElementException:
             return None
+        
+    def send_keys_to(self, css_selector: str, keys: str, wait_time: int = 0) -> None:
+        input_field = self.find_by_css(css_selector, wait_time=wait_time)
+        input_field.send_keys(keys)
+        self.randomized_sleep(TYPING_FACTOR * len(keys))
+
+    def click_button(self, css_selector: str, wait_time: int = 0) -> None:
+        button = self.find_by_css(css_selector, wait_time=wait_time)
+        button.click()
+        self.randomized_sleep(LITTLE_SLEEP)
 
     @staticmethod
     def randomized_sleep(avg: int = 1):
