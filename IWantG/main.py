@@ -1,12 +1,13 @@
 import time
 
-from selenium import webdriver
-
-
-MICRO_SLEEP = 1
+from IWantG.browser import Browser
+from IWantG.constants import *
 
 
 def main():
-    browser = webdriver.Firefox()
-    time.sleep(MICRO_SLEEP)
+    browser = Browser(headless=False)
+    time.sleep(LITTLE_SLEEP)
 
+
+if __name__ == "__main__":
+    main()
