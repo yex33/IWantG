@@ -25,8 +25,11 @@ G2_BUTTON: str = "#G2btn"
 G_BUTTON: str = "#Gbtn"
 
 # sleeping constants for more realistic human input
-LITTLE_SLEEP = 1
-MEDIUM_SLEEP = 5
-LONG_SLEEP = 10
+LITTLE_SLEEP = 2
+MEDIUM_SLEEP = 10
+LONG_SLEEP = 20
 TYPING_CPS = 8  # Character Per Second (CPS)
 TYPING_FACTOR = 1 / TYPING_CPS
+
+SESSION_EXPIRY = 40  # minutes
+AVAILABILITY_REFRESH = 1  # minutes
