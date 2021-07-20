@@ -31,5 +31,7 @@ LONG_SLEEP = 20
 TYPING_CPS = 8  # Character Per Second (CPS)
 TYPING_FACTOR = 1 / TYPING_CPS
 
-SESSION_EXPIRY = 40  # minutes
+SESSION_EXPIRY = 45  # minutes
 AVAILABILITY_REFRESH = 1  # minutes
+
+DEBUG = False

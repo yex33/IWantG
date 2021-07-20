@@ -37,6 +37,9 @@ class Browser:
     def get_cookies(self):
         return self.driver.get_cookies()
 
+    def delete_all_cookies(self):
+        self.driver.delete_all_cookies()
+
     def implicitly_wait(self, t: int) -> None:
         self.driver.implicitly_wait(t)
 

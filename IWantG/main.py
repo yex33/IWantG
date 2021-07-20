@@ -1,7 +1,9 @@
+import sys
 from datetime import date, datetime
 
 import requests
 import time
+import logging
 
 from IWantG.browser import Browser
 from IWantG.constants import *
@@ -9,7 +11,9 @@ from IWantG.constants import *
 
 def renew_session(browser: Browser) -> list:
     print("Renewing booking session")
+    browser.delete_all_cookies()
     browser.get(BOOKING_URL)
+    # logging.debug("booking website loaded")
     browser.randomized_sleep(LITTLE_SLEEP)
     browser.send_keys_to("#emailAddress", EMAIL_ADDRESS)
     browser.send_keys_to("#confirmEmailAddress", EMAIL_ADDRESS)
@@ -18,13 +22,15 @@ def renew_session(browser: Browser) -> list:
     browser.click_button("#regSubmitBtn")
 
     browser.click_button(G_BUTTON if TEST_TYPE == "G" else G2_BUTTON, wait_time=LONG_SLEEP)
+    # logging.debug("test type selected")
     browser.click_button("button.booking-submit")
-
-    session = requests.Session()
-    session.headers.update(DEFAULT_HEADERS)
+    time.sleep(MEDIUM_SLEEP)
 
     location_ids = []
+    session = requests.Session()
+    session.headers.update(DEFAULT_HEADERS)
     centers: list = session.get(LOCATION_API).json()['driveTestCentres']
+    # logging.debug("drive test centers json fetched")
     preferred_centers = filter(lambda x: x['name'] in PREFERRED_LOCATIONS, centers)
     for center in preferred_centers:
         service_ids = list(filter(lambda x: x['licenceClass'] == TEST_TYPE, center['services']))
@@ -43,8 +49,10 @@ def get_availabilities(browser: Browser, location_ids: list) -> list:
     availabilities = []
     for location, service_id in location_ids:
         for month in range(date.today().month, date.today().month + PREFERRED_MONTHS_AHEAD):
-            month_info = session.get(AVAILABILITY_API.format(service_id, month, PREFERRED_YEAR)).json()[
-                'availableBookingDates']
+            month_info = session.get(
+                AVAILABILITY_API.format(service_id, month, PREFERRED_YEAR)
+            ).json()['availableBookingDates']
+            # logging.debug(f"{location} month {month} json fetched")
             for daily_info in month_info:
                 description = daily_info['description']
                 if description != "UNAVAILABLE" and description != "FULL":
@@ -64,7 +72,7 @@ def main():
     except AttributeError:
         # no pyopenssl support used / needed / available
         pass
-    browser = Browser(headless=False)
+    browser = Browser(headless=False if DEBUG else False)
     browser.randomized_sleep(LITTLE_SLEEP)
 
     wait_time = LONG_SLEEP
@@ -73,15 +81,17 @@ def main():
             location_ids = renew_session(browser)
             wait_time = max(wait_time / 2, LONG_SLEEP)
             print(f"Successfully renewed logins: {datetime.now().strftime('%d/%m/%Y %H:%M:%S')}")
-            for _ in range(SESSION_EXPIRY // AVAILABILITY_REFRESH):
+            for _ in range(SESSION_EXPIRY // AVAILABILITY_REFRESH // 4 * 3):
                 availabilities = get_availabilities(browser, location_ids)
                 if len(availabilities) > 0:
                     for entry in availabilities:
                         print(
-                            f"{PREFERRED_YEAR}/{entry['month']}/{entry['day']} at {entry['at']}: {entry['description']}")
+                            f"\n\n{PREFERRED_YEAR}/{entry['month']}/{entry['day']} at {entry['at']}: {entry['description']}\n\n"
+                        )
                 else:
-                    print("\rNo available time slot.")
-                print(f"\rLatest availabilities fetch: {datetime.now().strftime('%d/%m/%Y %H:%M:%S')}", end="")
+                    print("No available time slot. ", end="")
+                time.sleep(LITTLE_SLEEP)
+                print(f"Last fetch: {datetime.now().strftime('%d/%m/%Y %H:%M:%S')}")
                 time.sleep(AVAILABILITY_REFRESH * 60)
         except KeyboardInterrupt:
             print("\nCrawler exits")
@@ -93,4 +103,13 @@ def main():
 
 
 if __name__ == "__main__":
+    if DEBUG:
+        root = logging.getLogger()
+        root.setLevel(logging.DEBUG)
+        handler = logging.StreamHandler(sys.stdout)
+        handler.setLevel(logging.DEBUG)
+        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        handler.setFormatter(formatter)
+        root.addHandler(handler)
+
     main()
