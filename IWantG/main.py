@@ -9,7 +9,7 @@ from IWantG.browser import Browser
 from IWantG.constants import *
 
 
-def renew_session(browser: Browser) -> list:
+def renew_session(browser: Browser, wait_time: int) -> list:
     print("Renewing booking session")
     browser.delete_all_cookies()
     browser.get(BOOKING_URL)
@@ -21,7 +21,7 @@ def renew_session(browser: Browser) -> list:
     browser.send_keys_to("#licenceExpiryDate", EXPIRY_DATE)
     browser.click_button("#regSubmitBtn")
 
-    browser.click_button(G_BUTTON if TEST_TYPE == "G" else G2_BUTTON, wait_time=LONG_SLEEP)
+    browser.click_button(G_BUTTON if TEST_TYPE == "G" else G2_BUTTON, wait_time=wait_time)
     # logging.debug("test type selected")
     browser.click_button("button.booking-submit")
     time.sleep(MEDIUM_SLEEP)
@@ -78,7 +78,7 @@ def main():
     wait_time = LONG_SLEEP
     while True:
         try:
-            location_ids = renew_session(browser)
+            location_ids = renew_session(browser, wait_time)
             wait_time = max(wait_time / 2, LONG_SLEEP)
             print(f"Successfully renewed logins: {datetime.now().strftime('%d/%m/%Y %H:%M:%S')}")
             for _ in range(SESSION_EXPIRY // AVAILABILITY_REFRESH // 4 * 3):

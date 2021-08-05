@@ -27,7 +27,7 @@ G_BUTTON: str = "#Gbtn"
 # sleeping constants for more realistic human input
 LITTLE_SLEEP = 2
 MEDIUM_SLEEP = 10
-LONG_SLEEP = 20
+LONG_SLEEP = 50
 TYPING_CPS = 8  # Character Per Second (CPS)
 TYPING_FACTOR = 1 / TYPING_CPS
 
